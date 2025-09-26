@@ -24,8 +24,10 @@ __email__ = "team@fiddlesticks.dev"
 from .core.operation_spec import OperationSpec, ProcessingMode, InputOutputType
 from .core.pipeline_operation import PipelineOperation
 
+# Dual interface system
+from .core.dual_interface import OperationResolver, LayeredConfigurationSystem
+
 # TODO: Add these imports as modules are implemented
-# from .core.dual_interface import OperationResolver, LayeredConfigurationSystem
 # from .execution.pipeline import OperationPipeline
 # from .execution.assembler import SmartPipelineAssembler
 
@@ -34,9 +36,9 @@ __all__ = [
     "ProcessingMode", 
     "InputOutputType",
     "PipelineOperation",
+    "OperationResolver",
+    "LayeredConfigurationSystem",
     # TODO: Add to __all__ as modules are implemented
-    # "OperationResolver",
-    # "LayeredConfigurationSystem",
     # "OperationPipeline",
     # "SmartPipelineAssembler"
 ]
