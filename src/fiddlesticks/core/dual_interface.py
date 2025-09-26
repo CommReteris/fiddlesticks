@@ -110,7 +110,9 @@ class OperationResolver:
         if full_operation_name not in self.registry[category]:
             raise ValueError(f"Operation {full_operation_name} not found in category {category}")
         
-        spec = self.registry[category][full_operation_name]
+        operation = self.registry[category][full_operation_name]
+        # Extract spec from operation instance
+        spec = operation.spec if hasattr(operation, 'spec') else operation
         
         return category, full_operation_name, spec
     
