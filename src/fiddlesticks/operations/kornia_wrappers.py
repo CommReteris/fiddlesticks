@@ -20,9 +20,9 @@ Key Features:
 - Support for both single tensors and tensor lists
 """
 
+from typing import Dict, List, Any, Tuple, Optional
+
 import torch
-from typing import Dict, List, Any, Tuple, Union, Optional
-from abc import ABC, abstractmethod
 
 try:
     import kornia
@@ -37,34 +37,35 @@ try:
     KORNIA_AVAILABLE = True
 except ImportError:
     KORNIA_AVAILABLE = False
+    # TODO: need warning at least
     # Create mock modules for testing without Kornia
     class MockKornia:
         def __getattr__(self, name):
             return lambda *args, **kwargs: torch.zeros_like(args[0] if args else torch.zeros(1))
-    
+
     class MockKorniaColor:
         def rgb_to_grayscale(self, x, *args, **kwargs):
             # Convert RGB (B, 3, H, W) to grayscale (B, 1, H, W)
             if len(x.shape) == 4 and x.shape[1] == 3:
                 return torch.mean(x, dim=1, keepdim=True)
             return x
-        
+
         def __getattr__(self, name):
             return lambda *args, **kwargs: torch.zeros_like(args[0] if args else torch.zeros(1))
-    
+
     class MockKorniaGeometry:
         def __init__(self):
             # Create nested camera and depth modules
             self.camera = MockKornia()
             self.camera.project_points = lambda *args, **kwargs: torch.zeros_like(args[0] if args else torch.zeros(1))
             self.camera.unproject_points = lambda *args, **kwargs: torch.zeros_like(args[0] if args else torch.zeros(1))
-            
+
             self.depth = MockKornia()
             self.depth.depth_to_3d = lambda *args, **kwargs: torch.zeros_like(args[0] if args else torch.zeros(1))
-        
+
         def __getattr__(self, name):
             return lambda *args, **kwargs: torch.zeros_like(args[0] if args else torch.zeros(1))
-    
+
     kornia = MockKornia()
     KF = KE = KA = KL = KM = KFeat = MockKornia()
     KC = MockKorniaColor()
@@ -541,7 +542,35 @@ def _create_loss_wrapper(name: str, kornia_class: type, description: str) -> Kor
         constraints={'requires_kornia': True, 'operation_type': 'loss'},
         description=description
     )
-    kornia_func = kornia_class() if hasattr(kornia_class, '__call__') else kornia_class
+
+    # Handle different loss function initialization requirements
+    if name == "ssim_loss":
+        kornia_func = (
+            kornia_class(window_size=11)
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "ms_ssim_loss":
+        kornia_func = (
+            kornia_class() if hasattr(kornia_class, "__call__") else kornia_class
+        )
+    elif name == "lpips_loss":
+        kornia_func = (
+            kornia_class(net_type="alex")
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "psnr_loss":
+        kornia_func = (
+            kornia_class(max_val=1.0)
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    else:
+        kornia_func = (
+            kornia_class() if hasattr(kornia_class, "__call__") else kornia_class
+        )
+
     return KorniaOperationWrapper(kornia_func, spec)
 
 

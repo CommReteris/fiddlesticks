@@ -5,10 +5,12 @@ Contains all operation wrappers that implement the universal PipelineOperation
 interface for different types of operations (classical, ML, I/O, etc.).
 """
 
+from typing import Dict, List, Any, Tuple, Optional
+
 import torch
-from typing import Dict, List, Any, Tuple, Union, Optional
-from ..core.pipeline_operation import PipelineOperation
+
 from ..core.operation_spec import OperationSpec, ProcessingMode, InputOutputType
+from ..core.pipeline_operation import PipelineOperation
 
 
 class OperationWrapper(PipelineOperation):
@@ -272,13 +274,37 @@ class RawDenoiseWrapper(OperationWrapper):
 
 class DemosaicWrapper(OperationWrapper):
     def __init__(self):
-        super().__init__(_create_default_spec('demosaic'))
+        spec = OperationSpec(
+            name="demosaic",
+            supported_modes=[ProcessingMode.SINGLE_IMAGE],
+            input_types=[InputOutputType.RAW_BAYER],
+            output_types=[InputOutputType.RAW_4CH],
+            input_count=(1, 1),
+            output_count=1,
+            requires_metadata=["bayer_pattern"],
+            produces_metadata=["demosaic_applied"],
+            constraints={},
+            description="Demosaic Bayer pattern to 4-channel raw data",
+        )
+        super().__init__(spec)
 
 
 # Color Processing Operations
 class ColorInWrapper(OperationWrapper):
     def __init__(self):
-        super().__init__(_create_default_spec('colorin'))
+        spec = OperationSpec(
+            name="colorin",
+            supported_modes=[ProcessingMode.SINGLE_IMAGE],
+            input_types=[InputOutputType.RAW_4CH],
+            output_types=[InputOutputType.RGB],
+            input_count=(1, 1),
+            output_count=1,
+            requires_metadata=["color_profile", "white_point"],
+            produces_metadata=["color_space"],
+            constraints={},
+            description="Input color profile transformation from RAW_4CH to RGB",
+        )
+        super().__init__(spec)
 
 class ColorOutWrapper(OperationWrapper):
     def __init__(self):
