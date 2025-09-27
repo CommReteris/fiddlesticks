@@ -192,7 +192,7 @@ class KorniaBilateralFilterWrapper(KorniaOperationWrapper):
 
 class KorniaGaussianBlur2DWrapper(KorniaOperationWrapper):
     """Wrapper for Kornia 2D Gaussian blur operation."""
-    
+
     def __init__(self):
         spec = OperationSpec(
             name='gaussian_blur2d',
@@ -207,6 +207,67 @@ class KorniaGaussianBlur2DWrapper(KorniaOperationWrapper):
             description='2D Gaussian blur filtering'
         )
         super().__init__(KF.gaussian_blur2d, spec)
+
+    def process_tensors(
+        self, inputs: List[torch.Tensor], metadata: Dict[str, Any], **kwargs
+    ) -> Tuple[List[torch.Tensor], Dict[str, Any]]:
+        """
+        Process tensors using Kornia gaussian_blur2d with default parameters.
+
+        Args:
+            inputs: List of input tensors
+            metadata: Input metadata dictionary
+            **kwargs: Additional parameters (kernel_size, sigma)
+
+        Returns:
+            Tuple of (output_tensors, updated_metadata)
+        """
+        if not inputs:
+            raise ValueError(f"Operation {self.spec.name} requires at least one input")
+
+        input_tensor = inputs[0]
+        device = input_tensor.device
+
+        # Set default parameters if not provided
+        kernel_size = kwargs.get("kernel_size", (5, 5))  # Default 5x5 kernel
+        sigma = kwargs.get("sigma", (1.0, 1.0))  # Default sigma of 1.0
+
+        # Ensure kernel_size and sigma are tuples
+        if isinstance(kernel_size, int):
+            kernel_size = (kernel_size, kernel_size)
+        if isinstance(sigma, (int, float)):
+            sigma = (float(sigma), float(sigma))
+
+        try:
+            # Call kornia gaussian_blur2d with parameters
+            output_tensor = self.kornia_function(input_tensor, kernel_size, sigma)
+
+            # Ensure output is on same device
+            if hasattr(output_tensor, "to"):
+                output_tensor = output_tensor.to(device)
+
+            # Update metadata
+            output_metadata = metadata.copy()
+            output_metadata.update(
+                {
+                    "operation_applied": self.spec.name,
+                    "kernel_size": kernel_size,
+                    "sigma": sigma,
+                    "kornia_function": (
+                        self.kornia_function.__name__
+                        if hasattr(self.kornia_function, "__name__")
+                        else str(self.kornia_function)
+                    ),
+                    "input_shape": list(input_tensor.shape),
+                    "output_shape": list(output_tensor.shape),
+                    "device": str(device),
+                }
+            )
+
+            return [output_tensor], output_metadata
+
+        except Exception as e:
+            raise RuntimeError(f"Kornia operation {self.spec.name} failed: {str(e)}")
 
 
 # =============================================================================
@@ -238,7 +299,7 @@ class KorniaRGBToGrayscaleWrapper(KorniaOperationWrapper):
 
 class KorniaAdjustBrightnessWrapper(KorniaOperationWrapper):
     """Wrapper for Kornia brightness adjustment."""
-    
+
     def __init__(self):
         spec = OperationSpec(
             name='adjust_brightness',
@@ -254,6 +315,59 @@ class KorniaAdjustBrightnessWrapper(KorniaOperationWrapper):
         )
         super().__init__(KE.adjust_brightness, spec)
 
+    def process_tensors(
+        self, inputs: List[torch.Tensor], metadata: Dict[str, Any], **kwargs
+    ) -> Tuple[List[torch.Tensor], Dict[str, Any]]:
+        """
+        Process tensors using Kornia adjust_brightness with factor parameter.
+
+        Args:
+            inputs: List of input tensors
+            metadata: Input metadata dictionary (may contain 'brightness_factor')
+            **kwargs: Additional parameters (may contain 'factor')
+
+        Returns:
+            Tuple of (output_tensors, updated_metadata)
+        """
+        if not inputs:
+            raise ValueError(f"Operation {self.spec.name} requires at least one input")
+
+        input_tensor = inputs[0]
+        device = input_tensor.device
+
+        # Extract brightness factor from metadata or kwargs, with default
+        factor = metadata.get("brightness_factor") or kwargs.get("factor", 1.0)
+
+        try:
+            # Call kornia adjust_brightness with factor
+            output_tensor = self.kornia_function(input_tensor, factor)
+
+            # Ensure output is on same device
+            if hasattr(output_tensor, "to"):
+                output_tensor = output_tensor.to(device)
+
+            # Update metadata
+            output_metadata = metadata.copy()
+            output_metadata.update(
+                {
+                    "operation_applied": self.spec.name,
+                    "brightness_factor": factor,
+                    "kornia_function": (
+                        self.kornia_function.__name__
+                        if hasattr(self.kornia_function, "__name__")
+                        else str(self.kornia_function)
+                    ),
+                    "input_shape": list(input_tensor.shape),
+                    "output_shape": list(output_tensor.shape),
+                    "device": str(device),
+                }
+            )
+
+            return [output_tensor], output_metadata
+
+        except Exception as e:
+            raise RuntimeError(f"Kornia operation {self.spec.name} failed: {str(e)}")
+
 
 # =============================================================================
 # KORNIA GEOMETRY OPERATIONS
@@ -261,7 +375,7 @@ class KorniaAdjustBrightnessWrapper(KorniaOperationWrapper):
 
 class KorniaRotateWrapper(KorniaOperationWrapper):
     """Wrapper for Kornia rotation operation."""
-    
+
     def __init__(self):
         spec = OperationSpec(
             name='rotate',
@@ -276,6 +390,65 @@ class KorniaRotateWrapper(KorniaOperationWrapper):
             description='Rotate image by specified angle'
         )
         super().__init__(KG.rotate, spec)
+
+    def process_tensors(
+        self, inputs: List[torch.Tensor], metadata: Dict[str, Any], **kwargs
+    ) -> Tuple[List[torch.Tensor], Dict[str, Any]]:
+        """
+        Process tensors using Kornia rotate function with proper angle handling.
+
+        Args:
+            inputs: List of input tensors
+            metadata: Input metadata dictionary (should contain 'angle')
+            **kwargs: Additional parameters
+
+        Returns:
+            Tuple of (output_tensors, updated_metadata)
+        """
+        if not inputs:
+            raise ValueError(f"Operation {self.spec.name} requires at least one input")
+
+        input_tensor = inputs[0]
+        device = input_tensor.device
+
+        # Extract angle from metadata or kwargs
+        angle = metadata.get("angle") or kwargs.get("angle")
+        if angle is None:
+            raise ValueError(
+                "Rotate operation requires 'angle' parameter in metadata or kwargs"
+            )
+
+        try:
+            # Convert angle to tensor if it's not already
+            if not isinstance(angle, torch.Tensor):
+                angle_tensor = torch.tensor(angle, dtype=torch.float32, device=device)
+            else:
+                angle_tensor = angle.to(device)
+
+            # Call kornia rotate with angle as tensor
+            output_tensor = self.kornia_function(input_tensor, angle_tensor)
+
+            # Ensure output is on same device
+            if hasattr(output_tensor, "to"):
+                output_tensor = output_tensor.to(device)
+
+            # Update metadata
+            output_metadata = metadata.copy()
+            output_metadata.update(
+                {
+                    "operation_applied": self.spec.name,
+                    "rotation_angle": angle,
+                    "kornia_function": self.kornia_function.__name__,
+                    "input_shape": list(input_tensor.shape),
+                    "output_shape": list(output_tensor.shape),
+                    "device": str(device),
+                }
+            )
+
+            return [output_tensor], output_metadata
+
+        except Exception as e:
+            raise RuntimeError(f"Kornia operation {self.spec.name} failed: {str(e)}")
 
 
 # =============================================================================
@@ -351,7 +524,6 @@ def get_kornia_operations_registry() -> Dict[str, Dict[str, KorniaOperationWrapp
         },
         'kornia_feature_operations': {
             'harris_response': _create_feature_wrapper('harris_response', KFeat.harris_response, 'Harris corner response'),
-            'corner_detection': _create_feature_wrapper('corner_detection', KFeat.corner_detection, 'Corner detection'),
             'gftt_response': _create_feature_wrapper('gftt_response', KFeat.gftt_response, 'Good features to track response'),
             'hessian_response': _create_feature_wrapper('hessian_response', KFeat.hessian_response, 'Hessian response'),
             'dog_response': _create_feature_wrapper('dog_response', KFeat.dog_response, 'Difference of Gaussians response'),
@@ -383,7 +555,6 @@ def get_kornia_operations_registry() -> Dict[str, Dict[str, KorniaOperationWrapp
         'kornia_loss_operations': {
             'ssim_loss': _create_loss_wrapper('ssim_loss', KL.SSIMLoss, 'SSIM loss function'),
             'ms_ssim_loss': _create_loss_wrapper('ms_ssim_loss', KL.MS_SSIMLoss, 'Multi-scale SSIM loss'),
-            'lpips_loss': _create_loss_wrapper('lpips_loss', KL.LPIPSLoss, 'LPIPS perceptual loss'),
             'psnr_loss': _create_loss_wrapper('psnr_loss', KL.PSNRLoss, 'PSNR loss function'),
             'total_variation': _create_loss_wrapper('total_variation', KL.TotalVariation, 'Total variation loss'),
             'focal_loss': _create_loss_wrapper('focal_loss', KL.FocalLoss, 'Focal loss function'),
@@ -395,8 +566,6 @@ def get_kornia_operations_registry() -> Dict[str, Dict[str, KorniaOperationWrapp
         'kornia_metrics_operations': {
             'psnr': _create_metric_wrapper('psnr', KM.psnr, 'PSNR metric'),
             'ssim': _create_metric_wrapper('ssim', KM.ssim, 'SSIM metric'),
-            'ms_ssim': _create_metric_wrapper('ms_ssim', KM.ms_ssim, 'Multi-scale SSIM metric'),
-            'lpips': _create_metric_wrapper('lpips', KM.lpips, 'LPIPS metric'),
             'mean_iou': _create_metric_wrapper('mean_iou', KM.mean_iou, 'Mean IoU metric'),
             'accuracy': _create_metric_wrapper('accuracy', KM.accuracy, 'Accuracy metric'),
         }
@@ -523,8 +692,65 @@ def _create_augmentation_wrapper(name: str, kornia_class: type, description: str
         constraints={'requires_kornia': True},
         description=description
     )
-    # For augmentation, we need to instantiate the class
-    kornia_func = kornia_class() if hasattr(kornia_class, '__call__') else kornia_class
+
+    # Handle different augmentation initialization requirements
+    if name == "random_crop":
+        kornia_func = (
+            kornia_class(size=(32, 32))  # Default crop size
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "random_resized_crop":
+        kornia_func = (
+            kornia_class(size=(32, 32))  # Default crop size
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "center_crop_aug":
+        kornia_func = (
+            kornia_class(size=(32, 32))  # Default crop size
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "random_rotation":
+        kornia_func = (
+            kornia_class(degrees=30.0)  # Default rotation range ±30 degrees
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "random_affine":
+        kornia_func = (
+            kornia_class(degrees=15.0)  # Default rotation range ±15 degrees
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "random_perspective":
+        kornia_func = (
+            kornia_class(distortion_scale=0.1)  # Default perspective distortion
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "random_gaussian_blur":
+        kornia_func = (
+            kornia_class(
+                kernel_size=(3, 3), sigma=(0.1, 2.0)
+            )  # Default kernel and sigma range
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "random_motion_blur":
+        kornia_func = (
+            kornia_class(
+                kernel_size=3, angle=15.0, direction=0.5
+            )  # Default motion blur parameters
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    else:
+        kornia_func = (
+            kornia_class() if hasattr(kornia_class, "__call__") else kornia_class
+        )
+
     return KorniaOperationWrapper(kornia_func, spec)
 
 
@@ -554,15 +780,21 @@ def _create_loss_wrapper(name: str, kornia_class: type, description: str) -> Kor
         kornia_func = (
             kornia_class() if hasattr(kornia_class, "__call__") else kornia_class
         )
-    elif name == "lpips_loss":
-        kornia_func = (
-            kornia_class(net_type="alex")
-            if hasattr(kornia_class, "__call__")
-            else kornia_class
-        )
     elif name == "psnr_loss":
         kornia_func = (
             kornia_class(max_val=1.0)
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "focal_loss":
+        kornia_func = (
+            kornia_class(alpha=1.0, gamma=2.0)  # Default focal loss parameters
+            if hasattr(kornia_class, "__call__")
+            else kornia_class
+        )
+    elif name == "tversky_loss":
+        kornia_func = (
+            kornia_class(alpha=0.5, beta=0.5)  # Default Tversky loss parameters
             if hasattr(kornia_class, "__call__")
             else kornia_class
         )

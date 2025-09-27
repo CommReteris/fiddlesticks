@@ -92,13 +92,18 @@ class UTNet2Wrapper(OperationWrapper):
             description='UTNet2 deep learning denoiser'
         )
         super().__init__(spec)
-    
+
     @property
     def operation_type(self) -> str:
         return "trainable"
-    
+
     def get_parameters(self) -> Optional[torch.nn.Module]:
-        return torch.nn.Identity()  # Mock for testing
+        # Mock neural network with trainable parameters for testing
+        return torch.nn.Sequential(
+            torch.nn.Conv2d(4, 32, 3, padding=1),
+            torch.nn.ReLU(),
+            torch.nn.Conv2d(32, 3, 3, padding=1),
+        )
 
 
 # Burst Processing Wrappers

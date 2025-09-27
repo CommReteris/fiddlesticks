@@ -265,13 +265,13 @@ class TestMetadataDependencyResolver:
 
     def test_metadata_dependency_resolver_exists(self):
         """Test that MetadataDependencyResolver exists and can be imported."""
-        from fiddlesticks.execution.metadata_resolver import MetadataDependencyResolver
+        from fiddlesticks.execution.assembler import MetadataDependencyResolver
 
         assert MetadataDependencyResolver is not None
 
     def test_metadata_dependency_resolver_initialization(self):
         """Test MetadataDependencyResolver initialization with operations."""
-        from fiddlesticks.execution.metadata_resolver import MetadataDependencyResolver
+        from fiddlesticks.execution.assembler import MetadataDependencyResolver
         from fiddlesticks.core.operation_spec import (
             OperationSpec,
             ProcessingMode,
@@ -300,7 +300,7 @@ class TestMetadataDependencyResolver:
 
     def test_validate_pipeline_metadata_valid(self):
         """Test metadata validation with satisfied dependencies."""
-        from fiddlesticks.execution.metadata_resolver import MetadataDependencyResolver
+        from fiddlesticks.execution.assembler import MetadataDependencyResolver
         from fiddlesticks.core.operation_spec import (
             OperationSpec,
             ProcessingMode,
@@ -333,7 +333,7 @@ class TestMetadataDependencyResolver:
 
     def test_validate_pipeline_metadata_missing(self):
         """Test metadata validation with missing dependencies."""
-        from fiddlesticks.execution.metadata_resolver import MetadataDependencyResolver
+        from fiddlesticks.execution.assembler import MetadataDependencyResolver
         from fiddlesticks.core.operation_spec import (
             OperationSpec,
             ProcessingMode,
@@ -370,7 +370,7 @@ class TestMetadataDependencyResolver:
 
     def test_suggest_metadata_providers(self):
         """Test suggesting operations that can provide missing metadata."""
-        from fiddlesticks.execution.metadata_resolver import MetadataDependencyResolver
+        from fiddlesticks.execution.assembler import MetadataDependencyResolver
 
         resolver = MetadataDependencyResolver([])
 
@@ -705,8 +705,8 @@ class TestPipelineDebugger:
         assert "edges" in visualization
         assert "data_flow" in visualization
 
-        # Should have nodes for each operation
-        assert len(visualization["nodes"]) == 3
+        # Should have nodes for each operation plus input and output nodes
+        assert len(visualization["nodes"]) == 5  # 3 operations + input + output
 
 
 class TestPipelineExecutionIntegration:
@@ -716,7 +716,7 @@ class TestPipelineExecutionIntegration:
         """Test that all pipeline execution components can be imported together."""
         from fiddlesticks.execution.pipeline import OperationPipeline
         from fiddlesticks.execution.assembler import SmartPipelineAssembler
-        from fiddlesticks.execution.metadata_resolver import MetadataDependencyResolver
+        from fiddlesticks.execution.assembler import MetadataDependencyResolver
         from fiddlesticks.execution.optimizer import OptimizedPipelineExecutor
         from fiddlesticks.execution.debugger import PipelineDebugger
 

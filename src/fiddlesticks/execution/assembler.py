@@ -215,6 +215,79 @@ class SmartPipelineAssembler:
 
         return suggestions
 
+    def generate_auto_fixes(
+        self, warnings: List[str], config: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Generate automatic fixes for pipeline warnings.
+
+        Args:
+            warnings: List of warning messages from validation
+            config: Original pipeline configuration
+
+        Returns:
+            List of auto-fix suggestion dictionaries
+        """
+        auto_fixes = []
+
+        for warning in warnings:
+            if "type mismatch" in warning.lower():
+                # Parse warning to extract operation details
+                if "Step" in warning:
+                    try:
+                        # Extract step number
+                        step_part = warning.split("Step")[1].split(":")[0].strip()
+                        step_num = int(step_part)
+
+                        if step_num < len(config) - 1:
+                            current_op = config[step_num]
+                            next_op = config[step_num + 1]
+
+                            current_spec = self._get_operation_spec(current_op)
+                            next_spec = self._get_operation_spec(next_op)
+
+                            if current_spec and next_spec:
+                                # Find conversion operations
+                                for out_type in current_spec.output_types:
+                                    for in_type in next_spec.input_types:
+                                        conversion_ops = (
+                                            self.suggest_missing_operations(
+                                                out_type, in_type
+                                            )
+                                        )
+                                        if conversion_ops:
+                                            auto_fixes.append(
+                                                {
+                                                    "type": "insert_conversion",
+                                                    "position": step_num + 1,
+                                                    "operations": conversion_ops,
+                                                    "reason": f"Convert {out_type.value} to {in_type.value}",
+                                                }
+                                            )
+                                            break
+                    except (ValueError, IndexError):
+                        continue
+
+            elif "unknown category" in warning.lower():
+                auto_fixes.append(
+                    {
+                        "type": "fix_category",
+                        "operation": "check_category_name",
+                        "reason": "Verify category name spelling and availability",
+                    }
+                )
+
+            elif "unknown operation" in warning.lower():
+                auto_fixes.append(
+                    {
+                        "type": "fix_operation",
+                        "operation": "check_operation_name",
+                        "reason": "Verify operation name spelling and availability",
+                    }
+                )
+
+        return auto_fixes
+
 
 class MetadataDependencyResolver:
     """
