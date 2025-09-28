@@ -4,3 +4,6 @@
 /src/fiddlesticks.egg-info/SOURCES.txt
 /src/fiddlesticks.egg-info/top_level.txt
 /uv.lock
+
+**/*/__pycache__
+visualizations/bilateral.png

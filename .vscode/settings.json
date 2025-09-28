@@ -1,0 +1,8 @@
+{
+    "python.testing.autoTestDiscoverOnSavePattern": "**/*/*.py",
+    "testing.coverageToolbarEnabled": true,
+    "testing.followRunningTest": true,
+    "python.createEnvironment.contentButton": "show",
+    "python.defaultInterpreterPath": ".venv/bin/python",
+    "python.testing.pytestEnabled": true
+}

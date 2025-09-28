@@ -77,16 +77,17 @@ class TestModelRegistry:
         model = registry.create_model('custom_model')
         assert isinstance(model, MockModel)
     
-    def test_model_registry_create_model_with_params(self):
+    @pytest.mark.parametrize("in_channels", [3, 4])
+    def test_model_registry_create_model_with_params(self, in_channels):
         """Test creating model with specific parameters."""
         from fiddlesticks.registries.model_registry import ModelRegistry
-        
+
         registry = ModelRegistry()
-        
+
         # Test parameter passing
-        params = {'in_channels': 8, 'out_channels': 6, 'hidden_dim': 256}
+        params = {'in_channels': in_channels, 'out_channels': 6, 'hidden_dim': 256}
         model = registry.create_model('utnet2', **params)
-        
+
         # Should have created model with parameters
         assert model is not None
     
