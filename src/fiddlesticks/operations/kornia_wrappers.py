@@ -1,7 +1,7 @@
 """
 Kornia operation wrappers for GPU-accelerated computer vision operations.
 
-This module provides 65+ Kornia operation wrappers across 9 categories:
+This module provides Kornia operation wrappers across 9 categories:
 - kornia_filter_operations: Bilateral, Gaussian, Sobel, Laplacian, etc.
 - kornia_color_operations: RGB/HSV/LAB conversions, sepia effects
 - kornia_enhance_operations: Brightness, contrast, gamma adjustments
