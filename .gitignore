@@ -7,3 +7,11 @@
 *.pyc
 __pycache__
 visualizations/bilateral.png
+**/*/*.egg-info
+.idea/
+.roo/
+.serena/
+.venv
+.vscode
+htmlcov
+.pytest_cache

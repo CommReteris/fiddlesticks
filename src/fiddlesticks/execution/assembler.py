@@ -20,7 +20,7 @@ Key Features:
 from typing import Dict, List, Any, Tuple, Optional
 
 from ..core.operation_spec import OperationSpec, InputOutputType, ProcessingMode
-from ..operations.registry import ComprehensiveOperationRegistry
+from ..operations.registry import OperationRegistry
 
 
 class SmartPipelineAssembler:
@@ -32,14 +32,14 @@ class SmartPipelineAssembler:
     for fixing common pipeline issues.
     """
 
-    def __init__(self, registry: Optional[ComprehensiveOperationRegistry] = None):
+    def __init__(self, registry: Optional[OperationRegistry] = None):
         """
         Initialize SmartPipelineAssembler with operation registry.
 
         Args:
             registry: Operation registry for validation (creates new if None)
         """
-        self.registry = registry or ComprehensiveOperationRegistry()
+        self.registry = registry or OperationRegistry()
 
         # Build registry lookup for validation
         self._build_registry_lookup()

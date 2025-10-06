@@ -322,10 +322,10 @@ class TestRegistryExtensionIntegration:
     def test_registries_integration_with_main_system(self):
         """Test that registry extensions integrate with main operation system."""
         from fiddlesticks.registries.model_registry import ModelRegistry
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
         model_registry = ModelRegistry()
-        operation_registry = ComprehensiveOperationRegistry()
+        operation_registry = OperationRegistry()
         
         # Should be able to use together
         assert model_registry is not None

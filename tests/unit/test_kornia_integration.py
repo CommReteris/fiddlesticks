@@ -2,15 +2,67 @@
 Test cases for Kornia integration system.
 
 Following strict TDD approach - tests written first, implementation follows.
-Tests cover KorniaOperationWrapper base class and 65+ GPU-accelerated 
+Tests cover KorniaOperationWrapper base class and 65+ GPU-accelerated
 computer vision operations across 9 functional categories.
+
+This module contains comprehensive tests to ensure:
+1. Every Kornia module has a corresponding wrapper category
+2. Every Kornia operation has a corresponding wrapper that produces identical results
+3. All parameters in Kornia operations are available through the PipelineOperation interface
 """
 
 import pytest
 import torch
-from typing import Dict, List, Any, Tuple
+import inspect
+from typing import Dict, List, Any, Tuple, get_type_hints
 from unittest.mock import Mock, patch, MagicMock
 
+
+import kornia
+import kornia.filters as KF
+import kornia.color as KC
+import kornia.enhance as KE
+import kornia.geometry as KG
+import kornia.augmentation as KA
+import kornia.losses as KL
+import kornia.metrics as KM
+import kornia.feature as KFeat
+
+
+# Parameter definitions for parametrized tests
+# Only include modules that contain image operations
+image_modules = ['filters', 'color', 'enhance', 'geometry', 'augmentation', 'losses', 'metrics', 'feature']
+kornia_modules = []
+kornia_module_functions = []
+for module_name in image_modules:
+    if hasattr(kornia, module_name):
+        module = getattr(kornia, module_name, None)
+        if module:
+            functions = []
+            for func in dir(module):
+                if not func.startswith('_'):
+                    try:
+                        attr = getattr(module, func)
+                        if callable(attr):
+                            # Check if the function operates on tensors by inspecting type hints
+                            try:
+                                sig = inspect.signature(attr)
+                                has_tensor_param = any(
+                                    'Tensor' in str(param.annotation) or param.annotation == torch.Tensor
+                                    for param in sig.parameters.values()
+                                    if param.annotation != param.empty
+                                )
+                                if has_tensor_param:
+                                    functions.append(func)
+                            except:
+                                # If inspection fails, include anyway to be safe
+                                functions.append(func)
+                    except:
+                        pass
+            if functions:  # Only include modules that have functions
+                kornia_modules.append(module_name)
+                for func_name in functions:
+                    kornia_module_functions.append(f"{module_name}:{func_name}")
 
 class TestKorniaOperationWrapper:
     """Test cases for KorniaOperationWrapper base class."""
@@ -111,22 +163,72 @@ class TestKorniaIntegration:
     """Test cases for Kornia integration with existing registry system."""
     
     def test_kornia_operations_integrate_with_registry(self):
-        """Test that Kornia operations integrate with ComprehensiveOperationRegistry."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        """Test that Kornia operations integrate with OperationRegistry."""
+        from fiddlesticks.operations.registry import OperationRegistry
         from fiddlesticks.operations.kornia_wrappers import get_kornia_operations_registry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         kornia_registry = get_kornia_operations_registry()
         
         # Should be able to merge registries
         assert isinstance(kornia_registry, dict)
         assert len(kornia_registry) >= 9  # At least 9 categories
-    
-    def test_kornia_operations_count(self):
-        """Test that Kornia registry contains 65+ operations total."""
+
+
+class TestKorniaModuleCoverage:
+    """Test that every Kornia module has a corresponding wrapper category."""   
+    @pytest.mark.parametrize("module_name", kornia_modules)
+    def test_kornia_module_wrapper_coverage(self, module_name):
+        """Test that all Kornia modules have corresponding wrapper categories."""
         from fiddlesticks.operations.kornia_wrappers import get_kornia_operations_registry
-        
         kornia_registry = get_kornia_operations_registry()
-        total_operations = sum(len(category) for category in kornia_registry.values())
-        
-        assert total_operations >= 65
+        expected_category = f'kornia_{module_name}_operations'
+        assert expected_category in kornia_registry, f"Missing wrapper category for Kornia module: {module_name}"
+
+    
+    @pytest.mark.parametrize("module_func", kornia_module_functions)
+    def test_kornia_module_function_covers_actual_kornia_modules(self, module_func):
+        """Test that wrapper classes exist for each Kornia module pattern."""
+        from fiddlesticks.operations.kornia_wrappers import get_kornia_operations_registry
+        module_name, func_name = module_func.split(':', 1)
+        kornia_registry = get_kornia_operations_registry()
+        expected_category = f'kornia_{module_name}_operations'
+        assert expected_category in kornia_registry, f"Missing wrapper category for Kornia module: {module_name}"
+        assert func_name in kornia_registry[expected_category], f"Missing wrapper for Kornia operation: {func_name} in module {module_name}"
+
+
+class TestKorniaOperationEquivalence:
+    @pytest.mark.parametrize("module_func", kornia_module_functions)
+    def test_kornia_operation_equivalence(self, module_func):
+        """Test that Kornia operations produce identical results to their wrappers."""
+        from fiddlesticks.operations.kornia_wrappers import get_kornia_operations_registry
+
+        module_name, operation_name = module_func.split(':', 1)
+
+        # Define mock data shapes based on module type for dynamic input generation
+        mock_shapes = {
+            'filters': (1, 3, 64, 64),
+            'color': (1, 3, 64, 64),
+            'enhance': (1, 3, 64, 64),
+            'geometry': (1, 3, 64, 64),
+            'augmentation': (1, 3, 64, 64),
+            'losses': (1, 3, 64, 64),
+            'metrics': (1, 3, 64, 64),
+            'feature': (1, 3, 64, 64),
+        }
+
+        kornia_registry = get_kornia_operations_registry()
+        expected_category = f'kornia_{module_name}_operations'
+        wrapper = kornia_registry[expected_category].get(operation_name, None)
+        kop = getattr(kornia, f'{module_name}.{operation_name}', None)
+        fiddle_func = getattr(wrapper, 'process_tensors', None)
+        if wrapper is None or kop is None or fiddle_func is None:
+            assert False, f"Missing wrapper or function for {operation_name} in module {module_name}"
+        else:
+            # Create mock input data dynamic based on expected input shape per module (for things like RAW image data)
+            shape = mock_shapes[module_name]
+            mock_data = torch.randn(*shape)
+            # Call both functions and compare outputs
+            wrapper_result, _ = fiddle_func([mock_data], {})
+            kornia_result = kop(mock_data)
+            assert torch.allclose(wrapper_result[0], kornia_result, atol=1e-6), f"Outputs for {operation_name} do not match"

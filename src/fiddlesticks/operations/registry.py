@@ -13,7 +13,7 @@ from ..core.operation_spec import OperationSpec, ProcessingMode, InputOutputType
 from ..core.pipeline_operation import PipelineOperation
 
 
-class ComprehensiveOperationRegistry:
+class OperationRegistry:
     """
     Comprehensive registry containing 75+ operations across 10 functional categories.
     

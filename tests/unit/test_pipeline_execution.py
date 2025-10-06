@@ -151,9 +151,9 @@ class TestSmartPipelineAssembler:
     def test_smart_pipeline_assembler_initialization(self):
         """Test SmartPipelineAssembler initialization with registry."""
         from fiddlesticks.execution.assembler import SmartPipelineAssembler
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         assembler = SmartPipelineAssembler(registry)
 
         assert assembler is not None
@@ -163,9 +163,9 @@ class TestSmartPipelineAssembler:
     def test_validate_pipeline_compatibility_valid(self):
         """Test pipeline compatibility validation with valid configuration."""
         from fiddlesticks.execution.assembler import SmartPipelineAssembler
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         assembler = SmartPipelineAssembler(registry)
 
         # Valid configuration with compatible operations
@@ -190,9 +190,9 @@ class TestSmartPipelineAssembler:
     def test_validate_pipeline_compatibility_invalid(self):
         """Test pipeline compatibility validation with incompatible operations."""
         from fiddlesticks.execution.assembler import SmartPipelineAssembler
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         assembler = SmartPipelineAssembler(registry)
 
         # Invalid configuration with incompatible types
@@ -220,10 +220,10 @@ class TestSmartPipelineAssembler:
     def test_suggest_missing_operations(self):
         """Test suggestion of missing operations for type conversion."""
         from fiddlesticks.execution.assembler import SmartPipelineAssembler
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         from fiddlesticks.core.operation_spec import InputOutputType
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         assembler = SmartPipelineAssembler(registry)
 
         # Request conversion from RAW_BAYER to RGB
@@ -238,9 +238,9 @@ class TestSmartPipelineAssembler:
     def test_generate_auto_fixes(self):
         """Test automatic generation of pipeline fixes."""
         from fiddlesticks.execution.assembler import SmartPipelineAssembler
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         assembler = SmartPipelineAssembler(registry)
 
         # Configuration with type mismatch
@@ -477,9 +477,9 @@ class TestMetadataDependencyResolver:
     def test_metadata_dependency_resolver_initialization(self):
         """Test MetadataDependencyResolver initialization with operation specs."""
         from fiddlesticks.execution.assembler import MetadataDependencyResolver
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
 
         # Get operation specs for resolver
         operations = [
@@ -496,9 +496,9 @@ class TestMetadataDependencyResolver:
     def test_validate_pipeline_metadata_dependencies_valid(self):
         """Test metadata dependency validation with sufficient initial metadata."""
         from fiddlesticks.execution.assembler import MetadataDependencyResolver
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
 
         # Operations with metadata requirements
         operations = [
@@ -523,9 +523,9 @@ class TestMetadataDependencyResolver:
     def test_validate_pipeline_metadata_dependencies_missing(self):
         """Test metadata dependency validation with missing metadata."""
         from fiddlesticks.execution.assembler import MetadataDependencyResolver
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
 
         # Operations with metadata requirements
         operations = [
@@ -552,9 +552,9 @@ class TestMetadataDependencyResolver:
     def test_suggest_metadata_providers(self):
         """Test metadata provider suggestions for missing requirements."""
         from fiddlesticks.execution.assembler import MetadataDependencyResolver
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
 
         # Operations that produce metadata
         operations = [
@@ -574,9 +574,9 @@ class TestMetadataDependencyResolver:
     def test_build_dependency_graph(self):
         """Test dependency graph building from operations."""
         from fiddlesticks.execution.assembler import MetadataDependencyResolver
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
 
         operations = [
             registry.get_operation("raw_processing_operations", "demosaic").spec,
@@ -735,10 +735,10 @@ class TestPipelineExecutionIntegration:
         from fiddlesticks.execution.pipeline import OperationPipeline
         from fiddlesticks.execution.assembler import SmartPipelineAssembler
         from fiddlesticks.execution.debugger import PipelineDebugger
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
 
         # 1. Validate pipeline configuration
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         assembler = SmartPipelineAssembler(registry)
 
         config = [

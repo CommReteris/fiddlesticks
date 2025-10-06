@@ -20,7 +20,7 @@ from typing import Dict, List, Any, Tuple, Optional, Union
 
 import torch
 
-from ..operations.registry import ComprehensiveOperationRegistry
+from ..operations.registry import OperationRegistry
 
 
 class OperationPipeline:
@@ -47,7 +47,7 @@ class OperationPipeline:
         self.config = config
         self.operations = []
         self.metadata_history = []
-        self.registry = ComprehensiveOperationRegistry()
+        self.registry = OperationRegistry()
 
         # Build operations from configuration
         self._build_operations()

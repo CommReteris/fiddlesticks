@@ -17,24 +17,24 @@ class TestOperationRegistry:
     
     def test_operation_registry_exists(self):
         """Test that ComprehensiveOperationRegistry exists and can be imported."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
-        assert ComprehensiveOperationRegistry is not None
+        from fiddlesticks.operations.registry import OperationRegistry
+        assert OperationRegistry is not None
     
     def test_operation_registry_singleton_pattern(self):
         """Test that ComprehensiveOperationRegistry follows singleton pattern."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry1 = ComprehensiveOperationRegistry()
-        registry2 = ComprehensiveOperationRegistry()
+        registry1 = OperationRegistry()
+        registry2 = OperationRegistry()
         
         # Should be the same instance (singleton)
         assert registry1 is registry2
     
     def test_operation_registry_has_all_categories(self):
         """Test that registry contains all 10 functional categories."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_categories = [
             'input_output_operations',
@@ -56,9 +56,9 @@ class TestOperationRegistry:
     
     def test_input_output_operations_category(self):
         """Test input_output_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             # Input operations
@@ -82,9 +82,9 @@ class TestOperationRegistry:
     
     def test_raw_processing_operations_category(self):
         """Test raw_processing_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             'rawprepare', 'hotpixels', 'temperature', 'rawdenoise', 'demosaic'
@@ -98,9 +98,9 @@ class TestOperationRegistry:
     
     def test_color_processing_operations_category(self):
         """Test color_processing_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             'colorin', 'colorout', 'channelmixerrgb', 'colorbalancergb', 'primaries'
@@ -114,9 +114,9 @@ class TestOperationRegistry:
     
     def test_tone_mapping_operations_category(self):
         """Test tone_mapping_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             'exposure', 'filmicrgb', 'sigmoid', 'toneequal', 'highlights'
@@ -130,9 +130,9 @@ class TestOperationRegistry:
     
     def test_enhancement_operations_category(self):
         """Test enhancement_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             'sharpen', 'diffuse', 'blurs', 'defringe', 'ashift'
@@ -146,9 +146,9 @@ class TestOperationRegistry:
     
     def test_denoising_operations_category(self):
         """Test denoising_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             'utnet2', 'bm3d', 'bilateral', 'nlmeans', 'denoiseprofile'
@@ -162,9 +162,9 @@ class TestOperationRegistry:
     
     def test_burst_processing_operations_category(self):
         """Test burst_processing_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             'hdr_merge', 'focus_stack', 'panorama_stitch', 'temporal_denoise', 'super_resolution'
@@ -178,9 +178,9 @@ class TestOperationRegistry:
     
     def test_geometric_operations_category(self):
         """Test geometric_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             'crop', 'flip', 'rotatepixels', 'scalepixels', 'liquify'
@@ -194,9 +194,9 @@ class TestOperationRegistry:
     
     def test_quality_assessment_operations_category(self):
         """Test quality_assessment_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             'overexposed', 'rawoverexposed', 'noise_estimation', 'blur_detection', 'exposure_analysis'
@@ -210,9 +210,9 @@ class TestOperationRegistry:
     
     def test_creative_operations_category(self):
         """Test creative_operations category contains expected operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         expected_operations = [
             'grain', 'borders', 'watermark', 'vignette', 'bloom'
@@ -226,9 +226,9 @@ class TestOperationRegistry:
     
     def test_get_operation_method(self):
         """Test get_operation method retrieves operations correctly."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         # Test valid operation retrieval
         operation = registry.get_operation('denoising_operations', 'bilateral')
@@ -244,9 +244,9 @@ class TestOperationRegistry:
     
     def test_list_categories_method(self):
         """Test list_categories method returns all category names."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         categories = registry.list_categories()
         
@@ -264,9 +264,9 @@ class TestOperationRegistry:
     
     def test_validate_operation_exists_method(self):
         """Test validate_operation_exists method."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         # Test existing operation
         assert registry.validate_operation_exists('denoising_operations', 'bilateral') is True
@@ -279,9 +279,9 @@ class TestOperationRegistry:
     
     def test_registry_total_operation_count(self):
         """Test that registry contains at least 75 total operations."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         total_operations = 0
         categories = registry.list_categories()
@@ -423,10 +423,10 @@ class TestOperationRegistryIntegration:
     
     def test_registry_integration_with_operation_resolver(self):
         """Test that operation registry integrates with OperationResolver."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         from fiddlesticks.core.dual_interface import OperationResolver
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         # Create registry dict for OperationResolver
         registry_dict = {
@@ -446,10 +446,10 @@ class TestOperationRegistryIntegration:
     
     def test_registry_provides_complete_specs(self):
         """Test that all registry operations provide complete OperationSpec objects."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         from fiddlesticks.core.operation_spec import OperationSpec
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         categories = registry.list_categories()
         
         for category_name in categories:
@@ -470,9 +470,9 @@ class TestOperationRegistryIntegration:
     
     def test_registry_operations_are_callable(self):
         """Test that all registry operations are callable with proper interface."""
-        from fiddlesticks.operations.registry import ComprehensiveOperationRegistry
+        from fiddlesticks.operations.registry import OperationRegistry
         
-        registry = ComprehensiveOperationRegistry()
+        registry = OperationRegistry()
         
         # Test a sample operation from each category
         test_operations = [
